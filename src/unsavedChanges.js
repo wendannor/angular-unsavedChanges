@@ -60,17 +60,8 @@ angular.module('unsavedChanges', ['resettable'])
         }
     });
 
-    this.$get = ['$injector',
-        function($injector) {
-
-            function translateIfAble(message) {
-                if ($injector.has('$translate') && useTranslateService) {
-                    return $injector.get('$translate')(message);
-                } else {
-                    return false;
-                }
-            }
-
+    this.$get = [
+        function() {
             var publicInterface = {
                 // log function that accepts any number of arguments
                 // @see http://stackoverflow.com/a/7942355/1738217
@@ -94,13 +85,13 @@ angular.module('unsavedChanges', ['resettable'])
 
             Object.defineProperty(publicInterface, 'reloadMessage', {
                 get: function() {
-                    return translateIfAble(reloadMessage) || reloadMessage;
+                    return reloadMessage;
                 }
             });
 
             Object.defineProperty(publicInterface, 'navigateMessage', {
                 get: function() {
-                    return translateIfAble(navigateMessage) || navigateMessage;
+                    return navigateMessage;
                 }
             });
 
@@ -121,8 +112,8 @@ angular.module('unsavedChanges', ['resettable'])
     ];
 })
 
-.service('unsavedWarningSharedService', ['$rootScope', 'unsavedWarningsConfig', '$injector',
-    function($rootScope, unsavedWarningsConfig, $injector) {
+.service('unsavedWarningSharedService', ['$rootScope', 'unsavedWarningsConfig', '$injector', '$filter',
+    function($rootScope, unsavedWarningsConfig, $injector, $filter) {
 
         // Controller scopped variables
         var _this = this;
@@ -141,7 +132,7 @@ angular.module('unsavedChanges', ['resettable'])
             reload: unsavedWarningsConfig.reloadMessage
         };
 
-        // Check all registered forms 
+        // Check all registered forms
         // if any one is dirty function will return true
 
         function allFormsClean() {
@@ -167,7 +158,7 @@ angular.module('unsavedChanges', ['resettable'])
             var idx = allForms.indexOf(form);
 
             // this form is not present array
-            // @todo needs test coverage 
+            // @todo needs test coverage
             if (idx === -1) return;
 
             allForms.splice(idx, 1);
@@ -186,10 +177,19 @@ angular.module('unsavedChanges', ['resettable'])
 
         // Function called when user tries to close the window
         this.confirmExit = function() {
-            if (!allFormsClean()) return messages.reload;
+            if (!allFormsClean()) return translateIfAble(messages.reload);
             $rootScope.$broadcast('resetResettables');
             tearDown();
         };
+
+        function translateIfAble(message) {
+          if ($injector.has('$translate') && unsavedWarningsConfig.useTranslateService) {
+                translate = $filter('translate');
+                return translate(message);
+          } else {
+                return message;
+          }
+        }
 
         // bind to window close
         // @todo investigate new method for listening as discovered in previous tests
@@ -205,12 +205,12 @@ angular.module('unsavedChanges', ['resettable'])
                 //calling this function later will unbind this, acting as $off()
                 var removeFn = $rootScope.$on(aEvent, function(event, next, current) {
                     unsavedWarningsConfig.log("user is moving with " + aEvent);
-                    // @todo this could be written a lot cleaner! 
+                    // @todo this could be written a lot cleaner!
                     if (!allFormsClean()) {
                         unsavedWarningsConfig.log("a form is dirty");
-                        if (!confirm(messages.navigate)) {
+                        if (!confirm(translateIfAble(messages.navigate))) {
                             unsavedWarningsConfig.log("user wants to cancel leaving");
-                            event.preventDefault(); // user clicks cancel, wants to stay on page 
+                            event.preventDefault(); // user clicks cancel, wants to stay on page
                         } else {
                             unsavedWarningsConfig.log("user doesn't care about loosing stuff");
                             $rootScope.$broadcast('resetResettables');
@@ -266,11 +266,11 @@ angular.module('unsavedChanges', ['resettable'])
                 formElement.bind('reset', function(event) {
                     event.preventDefault();
                     // because we bind to `resetResettables` also when
-                    // dismissing alerts, we need to apply() in this 
-                    // instance to ensure the model view updates. 
+                    // dismissing alerts, we need to apply() in this
+                    // instance to ensure the model view updates.
                     // @note for ngActiveResoruce, where the models
                     // themselves do validation, we can't rely on just
-                    // setting the form to valid - we need to set each 
+                    // setting the form to valid - we need to set each
                     // model value back to valid.
                     scope.$apply($rootScope.$broadcast('resetResettables'));
 
@@ -278,7 +278,7 @@ angular.module('unsavedChanges', ['resettable'])
                     formCtrl.$setPristine();
                 });
 
-                // @todo check destroy on clear button too? 
+                // @todo check destroy on clear button too?
                 scope.$on('$destroy', function() {
                     unsavedWarningSharedService.removeForm(formCtrl);
                 });
@@ -313,7 +313,7 @@ angular.module('resettable', [])
 
                 var setter, getter, originalValue;
 
-                // save getters and setters and store the original value. 
+                // save getters and setters and store the original value.
                 attr.$observe('ngModel', function(newValue) {
                     getter = $parse(attr.ngModel);
                     setter = getter.assign;
