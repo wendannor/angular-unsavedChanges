@@ -1,5 +1,5 @@
-* Fork to support fetching angular-translate translations just before displaying the message, so that switching languages in runtime is working correctly. It also uses that 'translate' filter instead of the '$translate' service, as the latter returns a promise. *
----
+*Fork to support fetching angular-translate translations just before displaying the message, so that switching languages in runtime is working correctly. It also uses that 'translate' filter instead of the '$translate' service, as the latter returns a promise.*
+***
 
 # An AngularJS directive for forms that alerts user of unsaved changes.
 
