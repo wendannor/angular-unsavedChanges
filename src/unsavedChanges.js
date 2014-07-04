@@ -184,7 +184,7 @@ angular.module('unsavedChanges', ['resettable'])
 
         function translateIfAble(message) {
           if ($injector.has('$translate') && unsavedWarningsConfig.useTranslateService) {
-                translate = $filter('translate');
+                var translate = $filter('translate');
                 return translate(message);
           } else {
                 return message;
