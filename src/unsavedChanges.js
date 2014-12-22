@@ -229,7 +229,6 @@ angular.module('unsavedChanges', ['resettable'])
 .directive('unsavedWarningClear', ['unsavedWarningSharedService',
     function(unsavedWarningSharedService) {
         return {
-            scope: {},
             require: '^form',
             priority: 10,
             link: function(scope, element, attrs, formCtrl) {
@@ -245,7 +244,6 @@ angular.module('unsavedChanges', ['resettable'])
 .directive('unsavedWarningForm', ['unsavedWarningSharedService', '$rootScope',
     function(unsavedWarningSharedService, $rootScope) {
         return {
-            scope: {},
             require: 'form',
             link: function(scope, formElement, attrs, formCtrl) {
 
@@ -307,7 +305,6 @@ angular.module('resettable', [])
     function($parse, $compile, $rootScope) {
 
         return {
-            scope: true,
             restrict: 'A',
             link: function postLink(scope, elem, attr, ngModelCtrl) {
 
